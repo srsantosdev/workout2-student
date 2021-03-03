@@ -1,10 +1,14 @@
 import React from 'react';
+
+import { AuthProvider } from './auth';
 import { SocketProvider } from './socket';
 
 const AppProvider: React.FC = ({ children }) => {
   return (
     <SocketProvider>
-      {children}
+      <AuthProvider>
+        {children}
+      </AuthProvider>
     </SocketProvider>
   )
 }

@@ -11,8 +11,11 @@ import logoImg from '../../assets/logo.svg'
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 
-import { Container, Content } from './styles';
 import getValidationErrors from '../../utils/getValidationErrors';
+import { useAuth } from '../../hooks';
+
+import { Container, Content } from './styles';
+import { useHistory } from 'react-router-dom';
 
 interface CheckinData {
   document: string;
@@ -20,6 +23,9 @@ interface CheckinData {
 
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null)
+
+  const history = useHistory()
+  const { checkIn } = useAuth()
 
   const [loading, setLoading] = useState(false)
 
@@ -37,7 +43,9 @@ const SignIn: React.FC = () => {
         abortEarly: false,
       });
 
-      console.log(data)
+      await checkIn(data.document)
+
+      history.push('/home')
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
         const errors = getValidationErrors(error);
@@ -45,10 +53,12 @@ const SignIn: React.FC = () => {
 
         return;
       }
+
+      console.log(error)
     } finally {
       setLoading(false);
     }
-  }, [])
+  }, [history, checkIn])
 
   return (
     <Container>

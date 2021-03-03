@@ -1,18 +1,43 @@
-import React, { createContext, useEffect } from "react";
-import { connect } from "socket.io-client";
+import React, { createContext, useCallback, useState } from "react";
+import { connect, Socket } from "socket.io-client";
+
+type SocketType = typeof Socket;
 
 export interface SocketContextData {
+  connection: SocketType | null;
+  createConnection: () => SocketType
+  disconnectSocket: () => void
 }
 
 export const SocketContext = createContext({} as SocketContextData)
 
 export const SocketProvider: React.FC = ({ children }) => {
-  connect('http://localhost:9354', { path: '/socket' })
+  const [connection, setConnection] = useState<SocketType | null>(null)
 
-  useEffect(() => {}, [])
+  const createConnection = useCallback(() => {
+    const socketInstance = connect(String(process.env.REACT_APP_SOCKET_URL), { 
+      path: '/socket',
+    })
+
+    setConnection(socketInstance)
+
+    return socketInstance;
+  }, [])
+
+  const disconnectSocket = useCallback(() => {
+    if(!connection){
+      return;
+    }
+
+    connection.disconnect()
+  }, [connection])
 
   return (
-    <SocketContext.Provider value={{}}>
+    <SocketContext.Provider value={{
+      connection,
+      createConnection,
+      disconnectSocket,
+    }}>
       {children}
     </SocketContext.Provider>
   )
